@@ -165,3 +165,6 @@ class Player(PhysicsEntity):
                 self.dashing = 60
 
             
+class Enemy(PhysicsEntity):
+    def __init__(self, game, pos, size):
+        super().__init__(game, 'enemy', pos, size)
