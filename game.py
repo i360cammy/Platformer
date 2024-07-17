@@ -46,6 +46,11 @@ class Game:
 
         self.clouds = Clouds(self.assets['clouds'], count=16)
 
+        self.leaf_spawners = []
+        for tree in self.tilemap.extract([('large_decor', 2)], keep = True):
+            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
+        print(self.leaf_spawners)
+
     # This is the main game loop.
     def run(self):
         while True:
