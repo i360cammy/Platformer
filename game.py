@@ -2,6 +2,7 @@ import pygame
 import sys
 import random
 import math
+import os
 
 from scripts.entities import PhysicsEntity, Player, Enemy
 from scripts.utils import load_image, load_images, Animation
@@ -19,11 +20,12 @@ class Game:
     
         pygame.init()
 
-        self.screen = pygame.display.set_mode((640,480))
-
         pygame.display.set_caption("Ninja Game")
 
-        self.display = pygame.Surface((320, 240))
+        self.screen = pygame.display.set_mode((640,480))
+
+        self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
+        self.display_2 = pygame.Surface((320, 240))
 
         self.clock = pygame.time.Clock()
 
@@ -66,14 +68,15 @@ class Game:
     def run(self):
         while True:
 
-            self.display.blit(self.assets['background'], (0,0))
+            self.display.fill((0,0,0,0))
+            self.display_2.blit(self.assets['background'], (0,0))
 
             self.screenshake = max(0, self.screenshake - 1)
 
             if not len(self.enemies):
                 self.transition += 1
                 if self.transition > 30:
-                    self.level += 1
+                    self.level = min(self.level + 1, len(os.listdir('./data/maps')) - 1)
                     self.load_level(self.level)
             if self.transition < 0:
                 self.transition += 1
@@ -81,7 +84,7 @@ class Game:
             if self.dead:
                 self.dead += 1
                 if self.dead >= 10:
-                    self.transition += 1
+                    self.transition = min(30, (self.transition + 1))
                 if self.dead > 40:
                     self.load_level(self.level)
 
@@ -97,7 +100,7 @@ class Game:
                     self.particles.append(Particle(self, 'leaf', spawn_pos, [-0.1, 0.3], frame=random.randint(0, 20)))
 
             self.clouds.update()
-            self.clouds.render(self.display, offset=render_scroll)
+            self.clouds.render(self.display_2, offset=render_scroll)
 
             self.tilemap.render(self.display, offset=render_scroll)
 
@@ -116,6 +119,13 @@ class Game:
                 spark.render(self.display, offset=render_scroll)
                 if kill:
                     self.sparks.remove(spark)
+
+            display_mask = pygame.mask.from_surface(self.display)
+            display_sillhouette = display_mask.to_surface(setcolor=(0,0,0,180), unsetcolor=(0,0,0,0))
+
+            for offset in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                self.display_2.blit(display_sillhouette, offset)
+        
                 
 
             #projectile = [[x, y], velocity, timer]
@@ -188,8 +198,10 @@ class Game:
                 transition_surf.set_colorkey((255, 255, 255))
                 self.display.blit(transition_surf, (0, 0))
 
+            self.display_2.blit(self.display, (0,0))
+
             screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2, random.random() * self.screenshake - self.screenshake / 2)
-            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), screenshake_offset)
+            self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
 
             # This is the code that makes the game run at 60 frames per second.
             pygame.display.update()
