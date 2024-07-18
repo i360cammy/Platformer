@@ -57,7 +57,10 @@ class Game:
 
         self.tilemap = Tilemap(self, tile_size=16)
 
-        self.load_level(0)
+        self.screenshake = 0
+
+        self.level = 0
+        self.load_level(self.level)
 
     # This is the main game loop.
     def run(self):
@@ -65,10 +68,22 @@ class Game:
 
             self.display.blit(self.assets['background'], (0,0))
 
+            self.screenshake = max(0, self.screenshake - 1)
+
+            if not len(self.enemies):
+                self.transition += 1
+                if self.transition > 30:
+                    self.level += 1
+                    self.load_level(self.level)
+            if self.transition < 0:
+                self.transition += 1
+
             if self.dead:
                 self.dead += 1
+                if self.dead >= 10:
+                    self.transition += 1
                 if self.dead > 40:
-                    self.load_level(0)
+                    self.load_level(self.level)
 
 
             self.scroll[0] += (self.player.rect().centerx -  self.display.get_width() / 2 - self.scroll[0]) / 30
@@ -128,6 +143,7 @@ class Game:
                             self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
                             self.particles.append(Particle(self, 'particle', self.player.rect().center, [math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
                         self.dead += 1
+                        self.screenshake = max(16, self.screenshake)
                       
 
             for particle in self.particles.copy():
@@ -166,7 +182,14 @@ class Game:
                         self.movement[1] = False
 
 
-            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0,0))
+            if self.transition:
+                transition_surf = pygame.Surface(self.display.get_size())
+                pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height() // 2), (30 - abs(self.transition)) * 8)
+                transition_surf.set_colorkey((255, 255, 255))
+                self.display.blit(transition_surf, (0, 0))
+
+            screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2, random.random() * self.screenshake - self.screenshake / 2)
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), screenshake_offset)
 
             # This is the code that makes the game run at 60 frames per second.
             pygame.display.update()
@@ -176,6 +199,8 @@ class Game:
         self.tilemap.load('data/maps/' + str(map_id) + '.json')
 
         self.dead = 0
+
+        self.transition = -30
 
         self.scroll = [0, 0]
 

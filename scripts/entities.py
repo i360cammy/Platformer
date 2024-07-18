@@ -93,10 +93,14 @@ class Player(PhysicsEntity):
             self.air_timer = 0
             self.jump_count = 0
 
+        if self.air_timer > 180:
+            self.game.dead = 1
+
         self.wall_slide = False
 
         if(self.collisions['right'] or self.collisions['left']):
             self.wall_slide = True
+            self.air_timer = 0
             self.velocity[1] = min(self.velocity[1], 0.5)
             if(self.collisions['right']):
                 self.flip = False
@@ -208,6 +212,7 @@ class Enemy(PhysicsEntity):
 
         if abs(self.game.player.dashing) >= 50:
             if self.rect().colliderect(self.game.player.rect()):
+                self.game.screenshake = max(16, self.game.screenshake)
                 for i in range(30):
                     angle = random.random() * math.pi * 2
                     speed = random.random() * 5
