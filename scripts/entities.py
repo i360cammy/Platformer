@@ -150,17 +150,21 @@ class Player(PhysicsEntity):
                 self.velocity[0] = 3.5
                 self.velocity[1] = -2.5
                 self.jump_count = self.max_jumps - 1
+                self.game.sfx['jump'].play(0)
                 return True
             if not self.flip :
                 self.velocity[0] = -3.5
                 self.velocity[1] = -2.5
                 self.jump_count = self.max_jumps - 1
+                self.game.sfx['jump'].play(0)
                 return True
 
         if self.jump_count < self.max_jumps:
             self.velocity[1] = -3
             self.jump_count += 1
+            self.game.sfx['jump'].play(0)
             return True
+  
     
     def dash(self):
         if not self.dashing:    
@@ -168,6 +172,7 @@ class Player(PhysicsEntity):
                 self.dashing = -60
             else:
                 self.dashing = 60
+            self.game.sfx['dash'].play(0)
 
             
 class Enemy(PhysicsEntity):
@@ -193,6 +198,7 @@ class Enemy(PhysicsEntity):
                 if abs(dis[1]) < 16:
                     if(self.flip and dis[0] < 0):
                         self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                        self.game.sfx['shoot'].play(0)
                         for i in range(4):
                             self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5 + math.pi, 2 + random.random()))
                     if not self.flip and dis[0] > 0:
