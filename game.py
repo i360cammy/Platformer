@@ -65,6 +65,12 @@ class Game:
 
             self.display.blit(self.assets['background'], (0,0))
 
+            if self.dead:
+                self.dead += 1
+                if self.dead > 40:
+                    self.load_level(0)
+
+
             self.scroll[0] += (self.player.rect().centerx -  self.display.get_width() / 2 - self.scroll[0]) / 30
             self.scroll[1] += (self.player.rect().centery -  self.display.get_height() / 2 - self.scroll[1]) / 30
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
@@ -86,8 +92,9 @@ class Game:
                 if kill:
                     self.enemies.remove(enemy)
 
-            self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
-            self.player.render(self.display, offset=render_scroll)
+            if not self.dead:
+                self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
+                self.player.render(self.display, offset=render_scroll)
 
             for spark in self.sparks.copy():
                 kill = spark.update()
@@ -120,6 +127,7 @@ class Game:
                             speed = random.random() * 5
                             self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
                             self.particles.append(Particle(self, 'particle', self.player.rect().center, [math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+                        self.dead += 1
                       
 
             for particle in self.particles.copy():
@@ -166,6 +174,8 @@ class Game:
 
     def load_level(self, map_id):
         self.tilemap.load('data/maps/' + str(map_id) + '.json')
+
+        self.dead = 0
 
         self.scroll = [0, 0]
 
