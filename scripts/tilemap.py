@@ -27,7 +27,7 @@ class Tilemap:
 
     def extract(self, id_pairs, keep=False):
         matches = []
-        for tile in self.offgrid_tiles:
+        for tile in self.offgrid_tiles.copy():
             if (tile['type'],tile['variant']) in id_pairs:
                 matches.append(tile.copy())
                 if not keep:
